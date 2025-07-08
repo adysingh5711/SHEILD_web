@@ -69,23 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const handleUpdateProfile = async (data: Partial<User> & { pictureFile?: File }) => {
     if (!user) return { success: false, error: "Not logged in" };
-    setLoading(true);
+    // setLoading(true); // Removed to use local state on profile page
     const result = await updateUserProfile(user.uid, data);
     if (result.success && result.user) {
         setUser(result.user);
     }
-    setLoading(false);
+    // setLoading(false);
     return result;
   };
 
   const handleChangePassword = async (oldPass: string, newPass: string) => {
       if (!user) return { success: false, error: "Not logged in" };
-      setLoading(true);
+      // setLoading(true); // Removed to use local state on profile page
       const result = await changeUserPassword(oldPass, newPass);
       if (result.success) {
         await handleLogout();
       }
-      setLoading(false);
+      // setLoading(false);
       return result;
   }
 

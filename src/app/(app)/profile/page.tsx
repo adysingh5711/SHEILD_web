@@ -61,7 +61,7 @@ const contactSchema = z.object({
 type EmergencyContact = z.infer<typeof contactSchema>;
 
 export default function ProfilePage() {
-  const { user, loading, updateProfile, changePassword } = useAuth();
+  const { user, updateProfile, changePassword } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([
@@ -69,6 +69,12 @@ export default function ProfilePage() {
     { name: 'Dr. Smith', phone: '098-765-4321' },
   ]);
   const [preview, setPreview] = useState<string | null>(null);
+
+  const [isProfileSaving, setIsProfileSaving] = useState(false);
+  const [isPictureSaving, setIsPictureSaving] = useState(false);
+  const [isPasswordChanging, setIsPasswordChanging] = useState(false);
+  const [isHealthcareSaving, setIsHealthcareSaving] = useState(false);
+  const [isContactAdding, setIsContactAdding] = useState(false);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -107,15 +113,18 @@ export default function ProfilePage() {
 
 
   async function onProfileSubmit(values: z.infer<typeof profileSchema>) {
+    setIsProfileSaving(true);
     const result = await updateProfile(values);
     if(result.success) {
       toast({ title: 'Profile Updated', description: 'Your personal information has been saved.' });
     } else {
       toast({ variant: 'destructive', title: 'Update Failed', description: result.error });
     }
+    setIsProfileSaving(false);
   }
 
   async function onPictureSubmit(values: z.infer<typeof pictureSchema>) {
+    setIsPictureSaving(true);
     const result = await updateProfile({ pictureFile: values.profilePicture });
     if(result.success) {
       toast({ title: 'Profile Picture Updated', description: 'Your new picture has been saved.' });
@@ -124,9 +133,11 @@ export default function ProfilePage() {
     } else {
       toast({ variant: 'destructive', title: 'Update Failed', description: result.error });
     }
+    setIsPictureSaving(false);
   }
   
   async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
+    setIsPasswordChanging(true);
     const result = await changePassword(values.oldPassword, values.newPassword);
      if(result.success) {
       toast({ title: 'Password Changed', description: 'You have been logged out. Please log in with your new password.' });
@@ -134,16 +145,24 @@ export default function ProfilePage() {
     } else {
       toast({ variant: 'destructive', title: 'Change Failed', description: result.error });
     }
+    setIsPasswordChanging(false);
   }
 
   function onHealthcareSubmit(values: z.infer<typeof healthcareSchema>) {
-    toast({ title: 'Healthcare Info Updated', description: 'Your healthcare information has been saved.' });
+    setIsHealthcareSaving(true);
+    // Mock async operation
+    setTimeout(() => {
+        toast({ title: 'Healthcare Info Updated', description: 'Your healthcare information has been saved.' });
+        setIsHealthcareSaving(false);
+    }, 1000);
   }
 
   function onContactSubmit(values: z.infer<typeof contactSchema>) {
+    setIsContactAdding(true);
     setEmergencyContacts([...emergencyContacts, values]);
     contactForm.reset();
     toast({ title: 'Contact Added', description: `${values.name} has been added to your emergency contacts.` });
+    setIsContactAdding(false);
   }
   
   function removeContact(index: number) {
@@ -169,7 +188,7 @@ export default function ProfilePage() {
               <FormField control={profileForm.control} name="email" render={({ field }) => (
                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" disabled {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes</Button>
+              <Button type="submit" disabled={isProfileSaving}>{isProfileSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes</Button>
             </form>
           </Form>
         </CardContent>
@@ -219,7 +238,7 @@ export default function ProfilePage() {
                         </FormItem>
                     )}
                     />
-                <Button type="submit" disabled={loading || !preview}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Update Picture</Button>
+                <Button type="submit" disabled={isPictureSaving || !preview}>{isPictureSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Update Picture</Button>
             </form>
             </Form>
         </CardContent>
@@ -242,7 +261,7 @@ export default function ProfilePage() {
                     <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
                         <FormItem><FormLabel>Confirm New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <Button type="submit" variant="destructive" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Change Password</Button>
+                    <Button type="submit" variant="destructive" disabled={isPasswordChanging}>{isPasswordChanging && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Change Password</Button>
                 </form>
             </Form>
         </CardContent>
@@ -270,7 +289,7 @@ export default function ProfilePage() {
                   <FormItem><FormLabel>Existing Conditions</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Healthcare Info</Button>
+              <Button type="submit" disabled={isHealthcareSaving}>{isHealthcareSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Healthcare Info</Button>
             </form>
           </Form>
         </CardContent>
@@ -305,7 +324,7 @@ export default function ProfilePage() {
                         <FormItem className="flex-1 w-full"><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="123-456-7890" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <div className="w-full md:w-auto self-end">
-                       <Button type="submit" className="w-full" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add Contact</Button>
+                       <Button type="submit" className="w-full" disabled={isContactAdding}>{isContactAdding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add Contact</Button>
                     </div>
                 </form>
             </Form>
