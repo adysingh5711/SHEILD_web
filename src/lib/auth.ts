@@ -34,8 +34,8 @@ export async function login(email: string, pass: string) {
   }
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
-    const storageRef = ref(storage, `profile-pictures/${auth.currentUser?.uid}/${file.name}`);
+async function uploadProfilePicture(user: FirebaseUser, file: File): Promise<string> {
+    const storageRef = ref(storage, `profile-pictures/${user.uid}/${file.name}`);
     await uploadBytes(storageRef, file);
     return getDownloadURL(storageRef);
 }
@@ -48,7 +48,7 @@ export async function signup(name: string, email: string, pass: string, picture?
 
     let photoURL: string | undefined = undefined;
     if (picture) {
-      photoURL = await fileToDataUrl(picture);
+      photoURL = await uploadProfilePicture(user, picture);
     }
     
     await updateFirebaseProfile(user, { displayName: name, photoURL });
@@ -80,7 +80,7 @@ export async function updateUserProfile(uid: string, data: Partial<User> & { pic
         }
 
         if (data.pictureFile) {
-            profileUpdate.photoURL = await fileToDataUrl(data.pictureFile);
+            profileUpdate.photoURL = await uploadProfilePicture(user, data.pictureFile);
         }
 
         await updateFirebaseProfile(user, profileUpdate);
