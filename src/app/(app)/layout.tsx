@@ -34,16 +34,16 @@ const navItems = [
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { user, loading, logout } = useAuth();
+  const { user, initialLoading, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!initialLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, initialLoading, router]);
 
-  if (loading || !user) {
+  if (initialLoading || !user) {
     return (
        <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">

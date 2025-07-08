@@ -109,8 +109,5 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  // We rename `initialLoading` to `loading` for consumers of the hook
-  // to simplify the API. The internal `loading` is for individual actions.
-  const { initialLoading: loading, ...rest } = context;
-  return { loading, ...rest };
+  return context;
 }

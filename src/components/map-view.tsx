@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Map, Marker } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 
 export function MapView() {
   const [position, setPosition] = useState({ lat: 51.5072, lng: -0.1276 }); // Default to London
@@ -42,13 +42,12 @@ export function MapView() {
       <Map
         center={position}
         zoom={15}
-        mapId="guardian_angel_map"
         fullscreenControl={false}
         streetViewControl={false}
         mapTypeControl={false}
         zoomControl={false}
       >
-        <Marker position={position} />
+        <AdvancedMarker position={position} />
       </Map>
     </div>
   );
