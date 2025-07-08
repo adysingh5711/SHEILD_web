@@ -49,11 +49,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const getInitials = (name: string) => {
-    const names = name.split(' ');
+    if (!name) return '??';
+    const names = name.split(' ').filter(Boolean);
     if (names.length > 1) {
-      return `${names[0][0]}${names[1][0]}`;
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
     }
-    return names[0].substring(0, 2);
+    if (names.length === 1 && names[0].length > 1) {
+      return names[0].substring(0, 2).toUpperCase();
+    }
+     if (names.length === 1) {
+      return names[0][0].toUpperCase();
+    }
+    return '??';
   }
 
   return (
@@ -108,7 +115,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+              <DropdownMenuLabel>{user.name || user.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push('/profile')}>Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>

@@ -1,16 +1,21 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import type { User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+
 import type { User } from '@/lib/auth';
-import { mockLogin, mockSignup, mockLogout, mockUpdateProfile, mockChangePassword } from '@/lib/auth';
+import { login, signup, logout, updateUserProfile, changeUserPassword } from '@/lib/auth';
+import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
-  login: typeof mockLogin;
-  signup: typeof mockSignup;
+  login: typeof login;
+  signup: typeof signup;
   logout: () => void;
   loading: boolean;
+  initialLoading: boolean;
   updateProfile: (data: Partial<User> & { pictureFile?: File }) => Promise<{ success: boolean, error?: string, user?: User }>;
   changePassword: (oldPass: string, newPass: string) => Promise<{ success: boolean, error?: string }>;
 }
@@ -20,38 +25,52 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const login = async (email: string, pass: string) => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        const appUser: User = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName || '',
+          email: firebaseUser.email || '',
+          profilePictureUrl: firebaseUser.photoURL || undefined,
+        };
+        setUser(appUser);
+      } else {
+        setUser(null);
+      }
+      setInitialLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin: typeof login = async (email, pass) => {
     setLoading(true);
-    const result = await mockLogin(email, pass);
-    if (result.success) {
-      setUser(result.user);
-    }
+    const result = await login(email, pass);
     setLoading(false);
     return result;
   };
 
-  const signup = async (name:string, email: string, pass: string, picture?: File) => {
+  const handleSignup: typeof signup = async (name, email, pass, picture) => {
     setLoading(true);
-    const result = await mockSignup(name, email, pass, picture);
-    if (result.success) {
-      setUser(result.user);
-    }
+    const result = await signup(name, email, pass, picture);
     setLoading(false);
     return result;
   };
 
-  const logout = () => {
+  const handleLogout = async () => {
     setLoading(true);
-    mockLogout();
-    setUser(null);
+    await logout();
+    // onAuthStateChanged will handle setting user to null
     setLoading(false);
   };
   
-  const updateProfile = async (data: Partial<User> & { pictureFile?: File }) => {
+  const handleUpdateProfile = async (data: Partial<User> & { pictureFile?: File }) => {
     if (!user) return { success: false, error: "Not logged in" };
     setLoading(true);
-    const result = await mockUpdateProfile(user.uid, data);
+    const result = await updateUserProfile(user.uid, data);
     if (result.success && result.user) {
         setUser(result.user);
     }
@@ -59,28 +78,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const changePassword = async (oldPass: string, newPass: string) => {
+  const handleChangePassword = async (oldPass: string, newPass: string) => {
       if (!user) return { success: false, error: "Not logged in" };
       setLoading(true);
-      const result = await mockChangePassword(user.uid, oldPass, newPass);
-      setLoading(false);
+      const result = await changeUserPassword(oldPass, newPass);
       if (result.success) {
-        // Log user out for security after password change
-        logout();
+        await handleLogout();
       }
+      setLoading(false);
       return result;
   }
 
   const value = useMemo(() => ({
     user,
-    login,
-    signup,
-    logout,
+    login: handleLogin,
+    signup: handleSignup,
+    logout: handleLogout,
     loading,
-    updateProfile,
-    changePassword
+    initialLoading,
+    updateProfile: handleUpdateProfile,
+    changePassword: handleChangePassword
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [user, loading]);
+  }), [user, loading, initialLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -90,5 +109,8 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+  // We rename `initialLoading` to `loading` for consumers of the hook
+  // to simplify the API. The internal `loading` is for individual actions.
+  const { initialLoading: loading, ...rest } = context;
+  return { loading, ...rest };
 }

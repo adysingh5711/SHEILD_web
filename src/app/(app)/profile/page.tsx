@@ -31,7 +31,6 @@ import { useRouter } from 'next/navigation';
 const profileSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
   email: z.string().email(),
-  phone: z.string().optional(),
 });
 
 const pictureSchema = z.object({
@@ -76,7 +75,6 @@ export default function ProfilePage() {
     values: {
       name: user?.name || '',
       email: user?.email || '',
-      phone: user?.phone || '',
     },
   });
 
@@ -131,7 +129,7 @@ export default function ProfilePage() {
   async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
     const result = await changePassword(values.oldPassword, values.newPassword);
      if(result.success) {
-      toast({ title: 'Password Changed', description: 'Please log in with your new password.' });
+      toast({ title: 'Password Changed', description: 'You have been logged out. Please log in with your new password.' });
       router.push('/login');
     } else {
       toast({ variant: 'destructive', title: 'Change Failed', description: result.error });
@@ -169,10 +167,7 @@ export default function ProfilePage() {
                 <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={profileForm.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={profileForm.control} name="phone" render={({ field }) => (
-                <FormItem><FormLabel>Mobile Number</FormLabel><FormControl><Input type="tel" placeholder="123-456-7890" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" disabled {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes</Button>
             </form>
