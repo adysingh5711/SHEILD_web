@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, anemic-dev-serverd { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { User } from '@/lib/auth';
 import { mockLogin, mockSignup, mockLogout } from '@/lib/auth';
 
