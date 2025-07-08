@@ -25,10 +25,26 @@ import { useAuth } from '@/components/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
   email: z.string().email(),
+  phone: z.string().optional(),
+});
+
+const pictureSchema = z.object({
+  profilePicture: z.instanceof(File).refine(file => file.size > 0, 'A new picture is required.'),
+});
+
+const passwordSchema = z.object({
+  oldPassword: z.string().min(6, 'Password must be at least 6 characters.'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters.'),
+  confirmPassword: z.string().min(6, 'Password must be at least 6 characters.'),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "New passwords don't match",
+  path: ['confirmPassword'],
 });
 
 const healthcareSchema = z.object({
@@ -46,19 +62,31 @@ const contactSchema = z.object({
 type EmergencyContact = z.infer<typeof contactSchema>;
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, updateProfile, changePassword } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([
     { name: 'Jane Doe', phone: '123-456-7890' },
     { name: 'Dr. Smith', phone: '098-765-4321' },
   ]);
+  const [preview, setPreview] = useState<string | null>(null);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     values: {
       name: user?.name || '',
       email: user?.email || '',
+      phone: user?.phone || '',
     },
+  });
+
+  const pictureForm = useForm<z.infer<typeof pictureSchema>>({
+    resolver: zodResolver(pictureSchema),
+  });
+
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { oldPassword: '', newPassword: '', confirmPassword: ''},
   });
 
   const healthcareForm = useForm<z.infer<typeof healthcareSchema>>({
@@ -80,8 +108,34 @@ export default function ProfilePage() {
   });
 
 
-  function onProfileSubmit(values: z.infer<typeof profileSchema>) {
-    toast({ title: 'Profile Updated', description: 'Your personal information has been saved.' });
+  async function onProfileSubmit(values: z.infer<typeof profileSchema>) {
+    const result = await updateProfile(values);
+    if(result.success) {
+      toast({ title: 'Profile Updated', description: 'Your personal information has been saved.' });
+    } else {
+      toast({ variant: 'destructive', title: 'Update Failed', description: result.error });
+    }
+  }
+
+  async function onPictureSubmit(values: z.infer<typeof pictureSchema>) {
+    const result = await updateProfile({ pictureFile: values.profilePicture });
+    if(result.success) {
+      toast({ title: 'Profile Picture Updated', description: 'Your new picture has been saved.' });
+      setPreview(null);
+      pictureForm.reset();
+    } else {
+      toast({ variant: 'destructive', title: 'Update Failed', description: result.error });
+    }
+  }
+  
+  async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
+    const result = await changePassword(values.oldPassword, values.newPassword);
+     if(result.success) {
+      toast({ title: 'Password Changed', description: 'Please log in with your new password.' });
+      router.push('/login');
+    } else {
+      toast({ variant: 'destructive', title: 'Change Failed', description: result.error });
+    }
   }
 
   function onHealthcareSubmit(values: z.infer<typeof healthcareSchema>) {
@@ -117,11 +171,87 @@ export default function ProfilePage() {
               <FormField control={profileForm.control} name="email" render={({ field }) => (
                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+              <FormField control={profileForm.control} name="phone" render={({ field }) => (
+                <FormItem><FormLabel>Mobile Number</FormLabel><FormControl><Input type="tel" placeholder="123-456-7890" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
               <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes</Button>
             </form>
           </Form>
         </CardContent>
       </Card>
+      
+      <Card className="shadow-neumorphic">
+        <CardHeader>
+            <CardTitle>Profile Picture</CardTitle>
+            <CardDescription>Update your profile picture.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Form {...pictureForm}>
+            <form onSubmit={pictureForm.handleSubmit(onPictureSubmit)} className="space-y-4 flex flex-col items-center">
+                 <FormField
+                    control={pictureForm.control}
+                    name="profilePicture"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col items-center">
+                        <FormLabel>
+                            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-neumorphic-inset">
+                                {preview ? (
+                                    <Image src={preview} alt="Profile preview" width={96} height={96} className="rounded-full object-cover w-full h-full" />
+                                ) : (
+                                    user?.profilePictureUrl ? (
+                                        <Image src={user.profilePictureUrl} alt="Current profile" width={96} height={96} className="rounded-full object-cover w-full h-full" />
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground text-center">Profile Photo</span>
+                                    )
+                                )}
+                            </div>
+                        </FormLabel>
+                        <FormControl>
+                            <Input 
+                            type="file" 
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                field.onChange(file);
+                                setPreview(URL.createObjectURL(file));
+                                }
+                            }}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <Button type="submit" disabled={loading || !preview}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Update Picture</Button>
+            </form>
+            </Form>
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-neumorphic">
+        <CardHeader>
+            <CardTitle>Change Password</CardTitle>
+            <CardDescription>Update your password. You will be logged out after a successful change.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Form {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                    <FormField control={passwordForm.control} name="oldPassword" render={({ field }) => (
+                        <FormItem><FormLabel>Current Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={passwordForm.control} name="newPassword" render={({ field }) => (
+                        <FormItem><FormLabel>New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
+                        <FormItem><FormLabel>Confirm New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <Button type="submit" variant="destructive" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Change Password</Button>
+                </form>
+            </Form>
+        </CardContent>
+    </Card>
 
       <Card className="shadow-neumorphic">
         <CardHeader>

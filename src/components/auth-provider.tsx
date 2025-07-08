@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { User } from '@/lib/auth';
-import { mockLogin, mockSignup, mockLogout } from '@/lib/auth';
+import { mockLogin, mockSignup, mockLogout, mockUpdateProfile, mockChangePassword } from '@/lib/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +11,8 @@ interface AuthContextType {
   signup: typeof mockSignup;
   logout: () => void;
   loading: boolean;
+  updateProfile: (data: Partial<User> & { pictureFile?: File }) => Promise<{ success: boolean, error?: string, user?: User }>;
+  changePassword: (oldPass: string, newPass: string) => Promise<{ success: boolean, error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,12 +48,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
   
+  const updateProfile = async (data: Partial<User> & { pictureFile?: File }) => {
+    if (!user) return { success: false, error: "Not logged in" };
+    setLoading(true);
+    const result = await mockUpdateProfile(user.uid, data);
+    if (result.success && result.user) {
+        setUser(result.user);
+    }
+    setLoading(false);
+    return result;
+  };
+
+  const changePassword = async (oldPass: string, newPass: string) => {
+      if (!user) return { success: false, error: "Not logged in" };
+      setLoading(true);
+      const result = await mockChangePassword(user.uid, oldPass, newPass);
+      setLoading(false);
+      if (result.success) {
+        // Log user out for security after password change
+        logout();
+      }
+      return result;
+  }
+
   const value = useMemo(() => ({
     user,
     login,
     signup,
     logout,
-    loading
+    loading,
+    updateProfile,
+    changePassword
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
