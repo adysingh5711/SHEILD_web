@@ -74,7 +74,7 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-neumorphic">
+    <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>Create an Account</CardTitle>
         <CardDescription>Join us to stay safe and connected.</CardDescription>
@@ -88,7 +88,7 @@ export default function SignupPage() {
               render={({ field }) => (
                 <FormItem className="flex flex-col items-center">
                   <FormLabel>
-                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-neumorphic-inset">
+                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-inner">
                         {preview ? (
                           <Image src={preview} alt="Profile preview" width={96} height={96} className="rounded-full object-cover w-full h-full" />
                         ) : (

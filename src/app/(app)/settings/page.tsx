@@ -65,7 +65,7 @@ export default function SettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
           <CardTitle>SOS Message</CardTitle>
           <CardDescription>Set the custom message to be sent when you trigger an SOS alert.</CardDescription>
@@ -98,7 +98,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
           <CardTitle>SOS Contacts</CardTitle>
           <CardDescription>These contacts will be notified when you trigger an SOS alert.</CardDescription>

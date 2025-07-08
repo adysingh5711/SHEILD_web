@@ -63,7 +63,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-neumorphic">
+    <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>Enter your credentials to access your account.</CardDescription>

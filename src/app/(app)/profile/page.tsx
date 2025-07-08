@@ -155,7 +155,7 @@ export default function ProfilePage() {
 
   return (
     <div className="grid gap-6">
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>Manage your personal information.</CardDescription>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
       
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
             <CardTitle>Profile Picture</CardTitle>
             <CardDescription>Update your profile picture.</CardDescription>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                     render={({ field }) => (
                         <FormItem className="flex flex-col items-center">
                         <FormLabel>
-                            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-neumorphic-inset">
+                            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-inner">
                                 {preview ? (
                                     <Image src={preview} alt="Profile preview" width={96} height={96} className="rounded-full object-cover w-full h-full" />
                                 ) : (
@@ -225,7 +225,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
       
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
             <CardTitle>Change Password</CardTitle>
             <CardDescription>Update your password. You will be logged out after a successful change.</CardDescription>
@@ -248,7 +248,7 @@ export default function ProfilePage() {
         </CardContent>
     </Card>
 
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
           <CardTitle>Healthcare Information</CardTitle>
           <CardDescription>This information may be shared in an emergency.</CardDescription>
@@ -276,7 +276,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
       
-      <Card className="shadow-neumorphic">
+      <Card>
         <CardHeader>
           <CardTitle>Emergency Contacts</CardTitle>
           <CardDescription>Manage your list of emergency contacts.</CardDescription>

@@ -22,12 +22,12 @@ export default function DashboardPage() {
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-        <Button variant="destructive" size="lg" onClick={handleSOS} className="gap-2 shadow-neumorphic active:shadow-neumorphic-inset">
+        <Button variant="destructive" size="lg" onClick={handleSOS} className="gap-2 shadow-md active:shadow-inner">
           <AlertTriangle className="h-5 w-5"/>
           <span className="font-bold">SOS</span>
         </Button>
       </div>
-      <div className="flex-1 rounded-lg shadow-neumorphic overflow-hidden">
+      <div className="flex-1 rounded-lg shadow-md border overflow-hidden">
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
           <MapView />
         </APIProvider>
