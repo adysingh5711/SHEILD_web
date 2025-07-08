@@ -5,8 +5,8 @@ import { AuthProvider } from '@/components/auth-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Guardian Angel',
-  description: 'Your personal safety companion',
+  title: 'SHEILD',
+  description: 'Smart Holistic Emergency & Intelligent Location Device',
 };
 
 export default function RootLayout({

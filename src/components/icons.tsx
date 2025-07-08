@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-export function GuardianAngelIcon(props: SVGProps<SVGSVGElement>) {
+export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

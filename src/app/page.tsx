@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, HeartPulse } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { GuardianAngelIcon } from '@/components/icons';
+import { ShieldIcon } from '@/components/icons';
 
 export default function SplashPage() {
   const [visible, setVisible] = useState(true);
@@ -33,11 +32,11 @@ export default function SplashPage() {
           visible ? 'animate-splash-in' : 'animate-splash-out'
         )}
       >
-        <GuardianAngelIcon className="h-24 w-24 text-primary" />
+        <ShieldIcon className="h-24 w-24 text-primary" />
         <h1 className="text-4xl font-bold tracking-tighter text-foreground font-headline">
-          Guardian Angel
+          SHEILD
         </h1>
-        <p className="text-muted-foreground">Your personal safety companion.</p>
+        <p className="max-w-sm text-center text-muted-foreground">Smart Holistic Emergency & Intelligent Location Device</p>
       </div>
     </main>
   );

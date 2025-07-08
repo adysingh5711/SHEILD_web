@@ -9,7 +9,7 @@ import {
   User,
   Settings,
   LogOut,
-  HeartPulse,
+  Menu,
 } from 'lucide-react';
 
 import { useAuth } from '@/components/auth-provider';
@@ -24,8 +24,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { GuardianAngelIcon } from '@/components/icons';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShieldIcon } from '@/components/icons';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
+const navItems = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/profile', icon: User, label: 'Profile & Emergency' },
+  { href: '/settings', icon: Settings, label: 'SOS Settings' },
+];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
@@ -41,7 +47,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return (
        <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <GuardianAngelIcon className="h-16 w-16 animate-pulse text-primary" />
+          <ShieldIcon className="h-16 w-16 animate-pulse text-primary" />
           <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
@@ -69,39 +75,61 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <GuardianAngelIcon className="h-6 w-6 text-primary" />
-              <span className="">Guardian Angel</span>
+              <ShieldIcon className="h-6 w-6 text-primary" />
+              <span className="">SHEILD</span>
             </Link>
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Link>
-              <Link
-                href="/profile"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <User className="h-4 w-4" />
-                Profile & Emergency
-              </Link>
-              <Link
-                href="/settings"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <Settings className="h-4 w-4" />
-                SOS Settings
-              </Link>
+               {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
         </div>
       </div>
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+           <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+              <nav className="grid gap-2 text-lg font-medium">
+                <Link
+                  href="/"
+                  className="mb-4 flex items-center gap-2 text-lg font-semibold"
+                >
+                  <ShieldIcon className="h-6 w-6 text-primary" />
+                  <span>SHEILD</span>
+                </Link>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-4 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
           <div className="w-full flex-1" />
           <ThemeToggle />
           <DropdownMenu>
