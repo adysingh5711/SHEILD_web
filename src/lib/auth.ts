@@ -26,17 +26,26 @@ export async function mockLogin(email: string, pass: string) {
   return { success: false, error: 'Invalid email or password' };
 }
 
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export async function mockSignup(name: string, email: string, pass: string, picture?: File) {
   await mockApiCall();
   if (users.some(u => u.email === email)) {
-    return { success: false, error: 'User with this email already exists' };
+    return { success: false, error: 'User with this email already exists.' };
   }
   
   const newUser: User = {
-    uid: String(users.length + 1),
+    uid: new Date().getTime().toString(),
     name,
     email,
-    profilePictureUrl: picture ? URL.createObjectURL(picture) : 'https://placehold.co/100x100.png',
+    profilePictureUrl: picture ? await fileToDataUrl(picture) : 'https://placehold.co/100x100.png',
   };
   
   users.push(newUser);

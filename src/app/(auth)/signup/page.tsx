@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const formSchema = z.object({
@@ -37,7 +37,7 @@ const formSchema = z.object({
 });
 
 export default function SignupPage() {
-  const { signup, loading } = useAuth();
+  const { signup, loading, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
@@ -51,14 +51,19 @@ export default function SignupPage() {
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const result = await signup(values.name, values.email, values.password, values.profilePicture);
     if (result.success) {
       toast({
         title: 'Account Created',
-        description: "Welcome to Guardian Angel!",
+        description: "Welcome to Guardian Angel! Redirecting...",
       });
-      router.push('/dashboard');
     } else {
       toast({
         variant: 'destructive',
