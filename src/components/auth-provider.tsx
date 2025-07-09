@@ -49,6 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleLogin: typeof login = async (email, pass) => {
     setLoading(true);
     const result = await login(email, pass);
+    if(result.success && result.user) {
+      setUser(result.user);
+    }
     setLoading(false);
     return result;
   };
@@ -56,6 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignup: typeof signup = async (name, email, pass, picture) => {
     setLoading(true);
     const result = await signup(name, email, pass, picture);
+     if(result.success && result.user) {
+      setUser(result.user);
+    }
     setLoading(false);
     return result;
   };
@@ -63,29 +69,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleLogout = async () => {
     setLoading(true);
     await logout();
-    // onAuthStateChanged will handle setting user to null
+    setUser(null);
     setLoading(false);
   };
   
   const handleUpdateProfile = async (data: Partial<User> & { pictureFile?: File }) => {
     if (!user) return { success: false, error: "Not logged in" };
-    // setLoading(true); // Removed to use local state on profile page
     const result = await updateUserProfile(user.uid, data);
     if (result.success && result.user) {
         setUser(result.user);
     }
-    // setLoading(false);
     return result;
   };
 
   const handleChangePassword = async (oldPass: string, newPass: string) => {
       if (!user) return { success: false, error: "Not logged in" };
-      // setLoading(true); // Removed to use local state on profile page
       const result = await changeUserPassword(oldPass, newPass);
       if (result.success) {
         await handleLogout();
       }
-      // setLoading(false);
       return result;
   }
 

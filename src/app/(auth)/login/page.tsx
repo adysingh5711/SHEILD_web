@@ -47,10 +47,10 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const result = await login(values.email, values.password);
-    if (result.success) {
+    if (result.success && result.user) {
       toast({
         title: 'Login Successful',
-        description: 'Welcome back!',
+        description: `Welcome back, ${result.user.name || result.user.email}!`,
       });
       router.push('/dashboard');
     } else {
