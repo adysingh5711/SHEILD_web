@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 
-export function MapView() {
+export function MapView({ mapId }: { mapId?: string }) {
   const [position, setPosition] = useState({ lat: 51.5072, lng: -0.1276 }); // Default to London
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +46,7 @@ export function MapView() {
         streetViewControl={false}
         mapTypeControl={false}
         zoomControl={false}
+        mapId={mapId}
       >
         <AdvancedMarker position={position} />
       </Map>
