@@ -153,26 +153,6 @@ export function MapView({ mapId }: { mapId?: string }) {
         </div>
       )}
 
-      {/* Custom Zoom Controls - Top Right */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col space-y-1">
-        <Button
-          onClick={handleZoomIn}
-          size="sm"
-          variant="outline"
-          className="bg-background/80 backdrop-blur-sm h-8 w-8 p-0"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={handleZoomOut}
-          size="sm"
-          variant="outline"
-          className="bg-background/80 backdrop-blur-sm h-8 w-8 p-0"
-        >
-          <Minus className="h-4 w-4" />
-        </Button>
-      </div>
-
       {/* Controls - Bottom Left */}
       <div className="absolute bottom-4 left-4 z-10 space-y-2">
         <Button
