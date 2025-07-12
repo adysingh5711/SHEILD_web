@@ -278,7 +278,7 @@ export function subscribeToSMSUpdates(userId: string, callback: (alert: SOSAlert
 // Real SMS function using server-side API
 async function sendRealSMS(phone: string, message: string, location: string) {
     try {
-        console.log(`📱 Sending real SMS to ${phone}...`);
+        console.log(`📱 Attempting to send real SMS to ${phone}...`);
 
         const response = await fetch('/api/send-sms', {
             method: 'POST',
@@ -301,24 +301,27 @@ async function sendRealSMS(phone: string, message: string, location: string) {
                 messageId: result.messageId,
                 phone: result.phone
             };
-        } else {
-            console.error(`❌ Real SMS failed for ${phone}:`, result.error);
+        }
 
-            // Check if it's a quota error and we should fallback to mock SMS
-            if (result.quotaExceeded && result.fallbackAvailable) {
-                console.log(`⚠️ SMS quota exceeded for ${phone}, falling back to mock SMS...`);
-                return {
-                    success: false,
-                    error: result.error,
-                    quotaExceeded: true
-                };
-            }
-
+        // Handle quota exceeded case
+        if (result.quotaExceeded && result.fallbackAvailable) {
+            console.log(`⚠️ SMS quota exceeded for ${phone}, falling back to mock SMS...`);
             return {
                 success: false,
-                error: result.error
+                error: 'SMS quota exceeded',
+                quotaExceeded: true
             };
         }
+
+        // Handle rate limiting
+        if (result.shouldRetry) {
+            console.log(`⚠️ Rate limited, waiting before retry...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await sendRealSMS(phone, message, location);
+        }
+
+        throw new Error(result.error || 'SMS sending failed');
+
     } catch (error: any) {
         console.error(`❌ Real SMS sending failed for ${phone}:`, error);
         return {
