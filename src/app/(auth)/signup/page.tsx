@@ -82,23 +82,23 @@ export default function SignupPage() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-             <FormField
+            <FormField
               control={form.control}
               name="profilePicture"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-center">
                   <FormLabel>
-                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-inner">
-                        {preview ? (
-                          <Image src={preview} alt="Profile preview" width={96} height={96} className="rounded-full object-cover w-full h-full" />
-                        ) : (
-                          <span className="text-xs text-muted-foreground text-center">Profile Photo</span>
-                        )}
-                      </div>
+                    <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer shadow-inner">
+                      {preview ? (
+                        <Image src={preview} alt="Profile preview" width={96} height={96} className="rounded-full object-cover w-full h-full" />
+                      ) : (
+                        <span className="text-xs text-muted-foreground text-center">Profile Photo</span>
+                      )}
+                    </div>
                   </FormLabel>
                   <FormControl>
-                    <Input 
-                      type="file" 
+                    <Input
+                      type="file"
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
@@ -160,7 +160,7 @@ export default function SignupPage() {
           </form>
         </Form>
       </CardContent>
-       <CardFooter className="text-sm text-center block">
+      <CardFooter className="text-sm text-center block">
         <p>Already have an account?{' '}
           <Link href="/login" className="text-primary hover:underline">
             Log in

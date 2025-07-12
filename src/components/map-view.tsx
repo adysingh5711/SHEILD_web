@@ -19,6 +19,10 @@ interface RouteInfo {
   duration?: string;
 }
 
+// Global location cache to prevent conflicts
+let globalLocationCache: { position: Position; timestamp: number } | null = null;
+const LOCATION_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export function MapView({ mapId }: { mapId?: string }) {
   const [position, setPosition] = useState<Position>({ lat: 25.2486, lng: 83.1944 }); // Default to Lauda
   const [error, setError] = useState<string | null>(null);
@@ -38,43 +42,113 @@ export function MapView({ mapId }: { mapId?: string }) {
       return;
     }
 
+    // Check if we have a recent cached location
+    if (globalLocationCache && (Date.now() - globalLocationCache.timestamp) < LOCATION_CACHE_DURATION) {
+      console.log('📍 Using cached location:', globalLocationCache.position);
+      setPosition(globalLocationCache.position);
+      setError(null);
+      return;
+    }
+
     setIsLocating(true);
     setError(null);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const newPosition = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
-        setPosition(newPosition);
-        setError(null);
-        setIsLocating(false);
-      },
-      (err) => {
-        let errorMessage = 'Unable to retrieve your location.';
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please enable location permissions.';
-            break;
-          case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
-            break;
-          case err.TIMEOUT:
-            errorMessage = 'Location request timed out.';
-            break;
-          default:
-            errorMessage = `Location error: ${err.message}`;
+    // Try multiple approaches to get location with better permission handling
+    const tryGetLocation = (attempt: number = 1) => {
+      const options = {
+        enableHighAccuracy: attempt === 1, // Try high accuracy first, then low
+        timeout: 20000 + (attempt * 5000), // Increase timeout for each attempt
+        maximumAge: 300000 // 5 minutes cache
+      };
+
+      console.log(`📍 Map requesting location (attempt ${attempt}) with options:`, options);
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const newPosition = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          };
+
+          // Cache the location globally
+          globalLocationCache = {
+            position: newPosition,
+            timestamp: Date.now()
+          };
+
+          // Expose cache on window for SOS to use
+          if (typeof window !== 'undefined') {
+            (window as any).globalLocationCache = globalLocationCache;
+          }
+
+          setPosition(newPosition);
+          setError(null);
+          setIsLocating(false);
+          console.log('📍 Map location obtained and cached:', newPosition);
+        },
+        (err) => {
+          console.error(`❌ Map geolocation error (attempt ${attempt}):`, err);
+
+          // If this is the first attempt and it's a permission error, wait and try again
+          if (attempt === 1 && err.code === err.PERMISSION_DENIED) {
+            console.log('🔄 Map permission denied on first attempt, waiting 2 seconds and trying again...');
+            setTimeout(() => tryGetLocation(2), 2000);
+            return;
+          }
+
+          // If this is the second attempt and still failing, try one more time with minimal options
+          if (attempt === 2 && err.code === err.PERMISSION_DENIED) {
+            console.log('🔄 Map trying final attempt with minimal options...');
+            setTimeout(() => tryGetLocation(3), 1000);
+            return;
+          }
+
+          // If all attempts failed, show error
+          let errorMessage = 'Unable to retrieve your location.';
+          switch (err.code) {
+            case err.PERMISSION_DENIED:
+              errorMessage = 'Location access denied. Please enable location permissions in your browser settings and try again.';
+              break;
+            case err.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable.';
+              break;
+            case err.TIMEOUT:
+              errorMessage = 'Location request timed out.';
+              break;
+            default:
+              errorMessage = `Location error: ${err.message}`;
+          }
+          setError(errorMessage);
+          setIsLocating(false);
+        },
+        options
+      );
+    };
+
+    // Start with permission check and wait for user response
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+        console.log('🔐 Map permission status:', permissionStatus.state);
+
+        if (permissionStatus.state === 'denied') {
+          setError('Location access denied. Please enable location permissions in your browser settings and try again.');
+          setIsLocating(false);
+          return;
         }
-        setError(errorMessage);
-        setIsLocating(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000, // 5 minutes
-      }
-    );
+
+        // If permission is granted or prompt, proceed with getting location
+        // Add a small delay to ensure the permission prompt has time to be handled
+        setTimeout(() => tryGetLocation(1), 500);
+      }).catch((error) => {
+        console.log('⚠️ Map permissions API error, trying geolocation directly:', error);
+        // If permissions API is not supported, try anyway with a delay
+        setTimeout(() => tryGetLocation(1), 500);
+      });
+    } else {
+      // If permissions API is not available, try anyway with a delay
+      console.log('⚠️ Map permissions API not available, trying geolocation directly');
+      setTimeout(() => tryGetLocation(1), 500);
+    }
   }, []);
 
   useEffect(() => {
@@ -144,6 +218,19 @@ export function MapView({ mapId }: { mapId?: string }) {
   const onMapLoad = useCallback((event: any) => {
     mapRef.current = event.detail.map;
   }, []);
+
+  // Only use mapId if it's properly configured and not causing conflicts
+  const mapConfig = {
+    center: position,
+    zoom: zoom,
+    fullscreenControl: true,
+    streetViewControl: true,
+    mapTypeControl: true,
+    zoomControl: false, // Disable default zoom control since we have custom ones
+    gestureHandling: "auto" as const,
+    // Only add mapId if it's properly configured
+    ...(mapId && mapId !== 'your_map_id_here' ? { mapId } : {})
+  };
 
   return (
     <div className="relative h-full w-full">
@@ -236,14 +323,7 @@ export function MapView({ mapId }: { mapId?: string }) {
       )}
 
       <Map
-        center={position}
-        zoom={zoom}
-        fullscreenControl={true}
-        streetViewControl={true}
-        mapTypeControl={true}
-        zoomControl={false} // Disable default zoom control since we have custom ones
-        gestureHandling="auto"
-        mapId={mapId}
+        {...mapConfig}
         className="h-full w-full"
       >
         <AdvancedMarker position={position} />
@@ -251,3 +331,6 @@ export function MapView({ mapId }: { mapId?: string }) {
     </div>
   );
 }
+
+// Export the global location cache for SOS to use
+export { globalLocationCache };

@@ -18,14 +18,14 @@ async function testSMSSending() {
         console.log('🚀 Testing AWS SNS SMS functionality...\n');
 
         // Test phone number (replace with your test number)
-        const testPhone = '+919876543210'; // Replace with actual test number
+        const testPhone = '+919369721072'; // Replace with actual test number
 
         // Test emergency message
         const emergencyMessage = `🚨 EMERGENCY SOS ALERT 🚨
 
 Test emergency message from SHEILD
 
-📍 Location: Mumbai, Maharashtra, India
+📍 Location: Sawai Madhopur, Rajasthan, India
 ⏰ Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
 
 This is an automated emergency alert from SHEILD.

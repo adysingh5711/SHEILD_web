@@ -45,7 +45,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   if (initialLoading || !user) {
     return (
-       <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <ShieldIcon className="h-16 w-16 animate-pulse text-primary" />
           <p className="text-muted-foreground">Loading your dashboard...</p>
@@ -63,7 +63,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     if (names.length === 1 && names[0].length > 1) {
       return names[0].substring(0, 2).toUpperCase();
     }
-     if (names.length === 1) {
+    if (names.length === 1) {
       return names[0][0].toUpperCase();
     }
     return '??';
@@ -81,7 +81,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-               {navItems.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -97,7 +97,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-           <Sheet>
+          <Sheet>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
